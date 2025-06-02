@@ -1,3 +1,5 @@
+
+# === Laravel ===
 /vendor/
 node_modules/
 npm-debug.log
@@ -28,3 +30,53 @@ Homestead.json
 .env.production
 .phpactor.json
 auth.json
+
+# === Flutter ===
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+.melos_tool/
+.pub-cache/
+build/
+.idea/
+*.iml
+*.lock
+*.log
+
+# Android specific
+android/.gradle/
+android/captures/
+android/gradle.properties
+android/key.properties
+android/local.properties
+
+# iOS specific
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/ServiceDefinitions.json
+ios/Runner.xcworkspace/
+ios/Pods/
+ios/.symlinks/
+ios/build/
+ios/Flutter/App.framework
+ios/Flutter/engine/
+
+# Xcode
+xcuserdata/
+*.xcworkspace
+DerivedData/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcworkspace/contents.xcworkspacedata
+
+# Others
+*.swp
+*.swo
+*.DS_Store
+
