@@ -2,16 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class User extends Model
+class Exercise extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -19,19 +17,11 @@ class User extends Model
      * @var array
      */
     protected $fillable = [
-        'username',
-        'email',
-        'password',
-        'is_active',
-    ];
-
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array
-     */
-    protected $hidden = [
-        'password',
+        'title',
+        'slug',
+        'instruction_nl',
+        'instruction_en',
+        'media_url',
     ];
 
     /**
@@ -42,13 +32,8 @@ class User extends Model
     protected function casts(): array
     {
         return [
-            'is_active' => 'boolean',
+            'id' => 'integer',
         ];
-    }
-
-    public function roles(): BelongsToMany
-    {
-        return $this->belongsToMany(Role::class);
     }
 
     public function performances(): HasMany
@@ -56,8 +41,8 @@ class User extends Model
         return $this->hasMany(Performance::class);
     }
 
-    public function authTokens(): HasMany
+    public function exerciseQrCodes(): HasMany
     {
-        return $this->hasMany(AuthToken::class);
+        return $this->hasMany(ExerciseQrCode::class);
     }
 }

@@ -1,0 +1,29 @@
+created:
+    - database/factories/RoleFactory.php
+    - database/factories/UserFactory.php
+    - database/factories/ExerciseFactory.php
+    - database/factories/PerformanceFactory.php
+    - database/factories/ExerciseQrCodeFactory.php
+    - database/factories/AuthTokenFactory.php
+    - database/migrations/2025_06_19_093021_create_roles_table.php
+    - database/migrations/2025_06_19_093022_create_users_table.php
+    - database/migrations/2025_06_19_093023_create_exercises_table.php
+    - database/migrations/2025_06_19_093024_create_performances_table.php
+    - database/migrations/2025_06_19_093025_create_exercise_qr_codes_table.php
+    - database/migrations/2025_06_19_093026_create_auth_tokens_table.php
+    - database/migrations/2025_06_19_093027_create_role_user_table.php
+    - app/Models/Role.php
+    - app/Models/User.php
+    - app/Models/Exercise.php
+    - app/Models/Performance.php
+    - app/Models/ExerciseQrCode.php
+    - app/Models/AuthToken.php
+models:
+    Role: { id: 'uuid primary', name: 'string:64 unique', description: 'text nullable', timestamps: timestamps, relationships: { belongsToMany: User } }
+    User: { id: 'uuid primary', username: 'string:64 unique', email: 'string:255 unique', password: string, is_active: 'boolean default:true', softdeletes: softDeletes, timestamps: timestamps, relationships: { belongsToMany: Role, hasMany: 'Performance, AuthToken' } }
+    Exercise: { title: 'string:128', slug: 'string:128 unique', instruction_nl: text, instruction_en: text, media_url: 'text nullable', softdeletes: softDeletes, timestamps: timestamps, relationships: { hasMany: 'Performance, ExerciseQrCode' } }
+    Performance: { user_id: 'uuid foreign', exercise_id: 'id foreign', performed_at: 'timestamp useCurrent', duration_sec: 'integer nullable', reps: 'integer nullable', indexes: [{ index: 'user_id, performed_at' }, { index: 'user_id, exercise_id' }], relationships: { belongsTo: 'User, Exercise' } }
+    ExerciseQrCode: { exercise_id: 'id foreign unique', qr_value: 'text unique', created_at: 'timestamp useCurrent', timestamps: false, indexes: [{ index: qr_value }], relationships: { belongsTo: Exercise } }
+    AuthToken: { id: 'uuid primary', user_id: 'uuid foreign', token_hash: 'char:64 unique', expires_at: timestamp, revoked: 'boolean default:false', indexes: [{ index: expires_at }], relationships: { belongsTo: User } }
+    role_user: { role_id: 'uuid foreign:onDelete:cascade', user_id: 'uuid foreign:onDelete:cascade', timestamps: false, indexes: [{ primary: 'role_id, user_id' }] }
+    RoleUser: { id: false, role_id: 'uuid foreign onDelete:cascade', user_id: 'uuid foreign onDelete:cascade', timestamps: false, indexes: [{ unique: 'role_id, user_id' }], relationships: { belongsTo: 'Role, User' } }

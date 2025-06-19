@@ -1,0 +1,69 @@
+# ================================================================
+#  SummaMove – final Blueprint draft (June 2025)
+# ================================================================
+
+models:
+
+  Role:
+    id: uuid primary
+    name: string:64 unique
+    description: text nullable
+    timestamps: true
+    relationships:
+      belongsToMany: User
+
+  User:
+    id: uuid primary
+    username: string:64 unique
+    email: string:255 unique
+    password: string
+    is_active: boolean default:true
+    softDeletes: true
+    timestamps: true
+    relationships:
+      belongsToMany: Role
+      hasMany: Performance, AuthToken
+
+  Exercise:
+    title: string:128
+    slug: string:128 unique
+    instruction_nl: text
+    instruction_en: text
+    media_url: text nullable
+    softDeletes: true
+    timestamps: true
+    relationships:
+      hasMany: Performance, ExerciseQrCode
+
+  Performance:
+    user_id: uuid foreign
+    exercise_id: id foreign
+    performed_at: timestamp useCurrent
+    duration_sec: integer nullable
+    reps: integer nullable
+    indexes:
+      - index: user_id, performed_at
+      - index: user_id, exercise_id
+    relationships:
+      belongsTo: User, Exercise
+
+  ExerciseQrCode:
+    exercise_id: id foreign unique
+    qr_value: text unique
+    created_at: timestamp useCurrent
+    timestamps: false
+    indexes:
+      - index: qr_value
+    relationships:
+      belongsTo: Exercise
+
+  AuthToken:
+    id: uuid primary
+    user_id: uuid foreign
+    token_hash: char:64 unique
+    expires_at: timestamp
+    revoked: boolean default:false
+    indexes:
+      - index: expires_at
+    relationships:
+      belongsTo: User

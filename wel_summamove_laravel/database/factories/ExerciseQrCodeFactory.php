@@ -4,16 +4,17 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
-use App\Models\User;
+use App\Models\Exercise;
+use App\Models\ExerciseQrCode;
 
-class UserFactory extends Factory
+class ExerciseQrCodeFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = User::class;
+    protected $model = ExerciseQrCode::class;
 
     /**
      * Define the model's default state.
@@ -21,10 +22,9 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'username' => fake()->userName(),
-            'email' => fake()->safeEmail(),
-            'password' => fake()->password(),
-            'is_active' => fake()->boolean(),
+            'exercise_id' => Exercise::factory(),
+            'qr_value' => fake()->text(),
+            'created_at' => fake()->dateTime(),
         ];
     }
 }
