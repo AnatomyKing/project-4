@@ -17,7 +17,7 @@ class Prestatie extends Model
     ];
 
     public function gebruiker() {
-        return $this->belongsTo(Gebruiker::class, 'gebruiker_id');
+        return $this->belongsTo(User::class, 'gebruiker_id');
     }
     public function oefening() {
         return $this->belongsTo(Oefening::class, 'oefening_id');
