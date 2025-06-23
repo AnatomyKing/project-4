@@ -31,142 +31,196 @@
   <button class="add-btn" onclick="voegToe()">+</button>
 
   <script>
-    const oefeningen = [
-      "Squat",
-      "Push-up",
-      "Dip",
-      "Plank",
-      "Paardentrap",
-      "Burpee"
-    ];
+  let oefeningen = []; // Lege array, wordt gevuld via API
+  let gebruikers = [];
 
-    function renderOefeningen() {
-      const lijst = document.getElementById("lijst");
-      lijst.innerHTML = "";
-
-      oefeningen.forEach(naam => {
-        const div = document.createElement("div");
-        div.className = "exercise";
-        div.innerHTML = `
-          <div>${naam}</div>
-          <div class="actions">
-            <button onclick="bewerken('${naam}')">⚙️</button>
-            <button onclick="verwijderen('${naam}')">🗑️</button>
-          </div>
-        `;
-        lijst.appendChild(div);
-      });
+  // Ophalen van oefeningen via API
+  async function haalOefeningenOp() {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/oefeningen');
+      if (!response.ok) throw new Error('Fout bij ophalen oefeningen');
+      oefeningen = await response.json();
+      renderOefeningen();
+    } catch (error) {
+      alert('Kon oefeningen niet laden: ' + error.message);
     }
-
-    function bewerken(naam) {
-       const lijst = document.getElementById("lijst");
-  lijst.innerHTML = `
-    <div class="form-container">
-      <button class="back-btn" onclick="renderOefeningen()">⬅ Terug</button>
-      <h3>Oefening veranderen</h3>
-      <label for="titel">Titel:</label>
-      <input type="text" id="titel" value="${naam}">
-
-      <label for="inst-nl">Instructie (NL):</label>
-      <textarea id="inst-nl" rows="4" placeholder="Uitleg in het Nederlands..."></textarea>
-
-      <label for="inst-eng">Instructie (ENG):</label>
-      <textarea id="inst-eng" rows="4" placeholder="Instructions in English..."></textarea>
-
-      <button onclick="opslaanBewerking('${naam}')">Opslaan</button>
-    </div>
-  `;
-    }
-function opslaanBewerking(oudNaam) {
-  const nieuweTitel = document.getElementById("titel").value.trim();
-  const instNl = document.getElementById("inst-nl").value.trim();
-  const instEng = document.getElementById("inst-eng").value.trim();
-
-  if (!nieuweTitel) {
-    alert("Titel mag niet leeg zijn.");
-    return;
   }
 
-  // Vervang oude naam met nieuwe titel
-  const index = oefeningen.indexOf(oudNaam);
-  if (index !== -1) {
-    oefeningen[index] = nieuweTitel;
-    alert(`"${oudNaam}" is aangepast naar "${nieuweTitel}" (fictief).`);
+  // Render oefeningen, nu met objecten (uit API)
+  function renderOefeningen() {
+    const lijst = document.getElementById("lijst");
+    lijst.innerHTML = "";
+
+    oefeningen.forEach(oefening => {
+      const div = document.createElement("div");
+      div.className = "exercise";
+      div.innerHTML = `
+        <div>${oefening.naam}</div>
+        <div class="actions">
+          <button onclick="bewerken(${oefening.id})">⚙️</button>
+          <button onclick="verwijderen(${oefening.id})">🗑️</button>
+        </div>
+      `;
+      lijst.appendChild(div);
+    });
   }
 
-  renderOefeningen();
-}
+  // Bewerken - toont formulier, haalt huidige gegevens op
+  function bewerken(id) {
+    const oefening = oefeningen.find(o => o.id === id);
+    if (!oefening) return alert('Oefening niet gevonden');
 
-    function verwijderen(naam) {
-      if (confirm(`Weet je zeker dat je "${naam}" wilt verwijderen?`)) {
-        alert(`"${naam}" verwijderd (fictief)`);
-      }
-    }
+    const lijst = document.getElementById("lijst");
+    lijst.innerHTML = `
+      <div class="form-container">
+        <button class="back-btn" onclick="haalOefeningenOp()">⬅ Terug</button>
+        <h3>Oefening veranderen</h3>
+        <label for="titel">Titel:</label>
+        <input type="text" id="titel" value="${oefening.naam}">
 
-    function voegToe() {
-  const lijst = document.getElementById("lijst");
-  lijst.innerHTML = `
-    <div class="form-container">
-      <button class="back-btn" onclick="renderOefeningen()">⬅️ Terug</button>
-      <h3>Oefening toevoegen</h3>
-      <label for="titel">Titel:</label>
-      <input type="text" id="titel" placeholder="Bijv. Burpee">
+        <label for="inst-nl">Instructie (NL):</label>
+        <textarea id="inst-nl" rows="4" placeholder="Uitleg in het Nederlands...">${oefening.beschrijving_nl ?? ''}</textarea>
 
-      <label for="inst-nl">Instructie (NL):</label>
-      <textarea id="inst-nl" rows="4" placeholder="Uitleg in het Nederlands..."></textarea>
+        <label for="inst-eng">Instructie (ENG):</label>
+        <textarea id="inst-eng" rows="4" placeholder="Instructions in English...">${oefening.beschrijving_en ?? ''}</textarea>
 
-      <label for="inst-eng">Instructie (ENG):</label>
-      <textarea id="inst-eng" rows="4" placeholder="Instructions in English..."></textarea>
-
-      <button onclick="opslaanOefening()">Toevoegen</button>
-    </div>
-  `;
-}
-function opslaanOefening() {
-  const titel = document.getElementById("titel").value.trim();
-  const instNl = document.getElementById("inst-nl").value.trim();
-  const instEng = document.getElementById("inst-eng").value.trim();
-
-  if (!titel) {
-    alert("Vul een titel in.");
-    return;
+        <button onclick="opslaanBewerking(${id})">Opslaan</button>
+      </div>
+    `;
   }
 
-  // Hier kun je ook de instructies opslaan als je wilt
-  oefeningen.push(titel);
-  alert(`"${titel}" toegevoegd (fictief)`);
+  // Opslaan van bewerking (hier kun je fetch POST/PUT toevoegen)
+  async function opslaanBewerking(id) {
+    const nieuweTitel = document.getElementById("titel").value.trim();
+    const instNl = document.getElementById("inst-nl").value.trim();
+    const instEng = document.getElementById("inst-eng").value.trim();
 
-  renderOefeningen(); // Terug naar de lijst
-}
-
-
-    function logout() {
-      alert("Uitgelogd (fictief)");
+    if (!nieuweTitel) {
+      alert("Titel mag niet leeg zijn.");
+      return;
     }
 
-    function toonOefeningen() {
+    // Hier zou je een API call doen om de oefening bij te werken
+    // Voor nu update je lokaal (fictief)
+    const index = oefeningen.findIndex(o => o.id === id);
+    if (index !== -1) {
+      oefeningen[index].naam = nieuweTitel;
+      oefeningen[index].beschrijving_nl = instNl;
+      oefeningen[index].beschrijving_en = instEng;
+      alert(`Oefening "${nieuweTitel}" is aangepast (fictief).`);
+    }
+
+    renderOefeningen();
+  }
+
+  // Verwijderen oefening (fictief, je kunt API call toevoegen)
+  async function verwijderen(id) {
+    const oefening = oefeningen.find(o => o.id === id);
+    if (!oefening) return alert('Oefening niet gevonden');
+    
+    if (confirm(`Weet je zeker dat je "${oefening.naam}" wilt verwijderen?`)) {
+      // API call kan hier
+
+      // Fictief lokaal verwijderen:
+      oefeningen = oefeningen.filter(o => o.id !== id);
+      alert(`"${oefening.naam}" verwijderd (fictief).`);
       renderOefeningen();
     }
+  }
 
-    function toonGebruikers() {
-        const lijst = document.getElementById("lijst");
-      lijst.innerHTML = "";
+  // Toevoegen nieuwe oefening
+  function voegToe() {
+    const lijst = document.getElementById("lijst");
+    lijst.innerHTML = `
+      <div class="form-container">
+        <button class="back-btn" onclick="haalOefeningenOp()">⬅ Terug</button>
+        <h3>Oefening toevoegen</h3>
+        <label for="titel">Titel:</label>
+        <input type="text" id="titel" placeholder="Bijv. Burpee">
 
-      oefeningen.forEach(naam => {
-        const div = document.createElement("div");
-        div.className = "exercise";
-        div.innerHTML = `
-          <div>Gebruiker</div>
-          <div class="actions">
-            <button onclick="bewerken('${naam}')">⚙️</button>
-            <button onclick="verwijderen('${naam}')">🗑️</button>
-          </div>
-        `;
-        lijst.appendChild(div);
-      });
+        <label for="inst-nl">Instructie (NL):</label>
+        <textarea id="inst-nl" rows="4" placeholder="Uitleg in het Nederlands..."></textarea>
+
+        <label for="inst-eng">Instructie (ENG):</label>
+        <textarea id="inst-eng" rows="4" placeholder="Instructions in English..."></textarea>
+
+        <button onclick="opslaanOefening()">Toevoegen</button>
+      </div>
+    `;
+  }
+
+  // Opslaan nieuwe oefening (fictief)
+  async function opslaanOefening() {
+    const titel = document.getElementById("titel").value.trim();
+    const instNl = document.getElementById("inst-nl").value.trim();
+    const instEng = document.getElementById("inst-eng").value.trim();
+
+    if (!titel) {
+      alert("Vul een titel in.");
+      return;
     }
 
-    renderOefeningen(); // init
-  </script>
+    // Hier kan je API POST call toevoegen om oefening op te slaan
+    // Fictief toevoegen lokaal:
+    const nieuwId = oefeningen.length ? Math.max(...oefeningen.map(o => o.id)) + 1 : 1;
+    oefeningen.push({
+      id: nieuwId,
+      naam: titel,
+      beschrijving_nl: instNl,
+      beschrijving_en: instEng,
+      afbeelding_url: null
+    });
+
+    alert(`"${titel}" toegevoegd (fictief).`);
+    renderOefeningen();
+  }
+
+  // Logout (fictief)
+  function logout() {
+    alert("Uitgelogd (fictief)");
+  }
+
+  function renderGebruikers() {
+    const lijst = document.getElementById("lijst");
+    lijst.innerHTML = "";
+
+    gebruikers.forEach(gebruiker => {
+      const div = document.createElement("div");
+      div.className = "user";
+      div.innerHTML = `
+        <div>${gebruiker.name}</div>
+        <div class="actions">
+          <button onclick="bewerken(${gebruiker.id})">⚙️</button>
+          <button onclick="verwijderen(${gebruiker.id})">🗑️</button>
+        </div>
+      `;
+      lijst.appendChild(div);
+    });
+  }
+
+async function haalGebruikersOp() {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/users');
+      if (!response.ok) throw new Error('Fout bij ophalen gebruikers');
+      gebruikers = await response.json();
+      renderGebruikers();
+    } catch (error) {
+      alert('Kon oefeningen niet laden: ' + error.message);
+    }
+  }
+
+  // Toon oefeningen (haal eerst op)
+  function toonOefeningen() {
+    haalOefeningenOp();
+  }
+
+  // Toon gebruikers (fictief)
+  function toonGebruikers() {
+    haalGebruikersOp();
+  }
+
+  // Initialisatie
+  toonOefeningen();
+</script>
 </body>
 </html>
