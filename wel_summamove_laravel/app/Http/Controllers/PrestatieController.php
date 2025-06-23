@@ -27,16 +27,20 @@ class PrestatieController extends Controller
 
         $validated = $request->validate([
             'oefening_id' => 'required|exists:oefeningen,id',
-            'resultaat' => 'required|string',
-            // voeg hier eventueel meer velden toe
+            'datum' => 'required|date',
+            'starttijd' => 'nullable|date_format:H:i:s',
+            'eindtijd' => 'nullable|date_format:H:i:s',
+            'aantal' => 'required|integer|min:1',
         ]);
 
-        $validated['user_id'] = $user->id;
+        $validated['gebruiker_id'] = $user->id;
 
         $prestatie = Prestatie::create($validated);
 
         return response()->json($prestatie, 201);
     }
+
+
 
     /**
      * Toon een specifieke prestatie (alleen van ingelogde gebruiker).
