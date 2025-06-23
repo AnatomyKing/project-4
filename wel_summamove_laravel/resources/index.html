@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <title>Summa Move Beheer</title>
+  <link rel="stylesheet" href="css/index.css">
+</head>
+<body>   
+    <header class="header-flex">
+   <h2> Summa Move Beheer</h2>
+<img id="logo" src="img/logo-1861420_1280-Photoroom.png">
+<button onclick="logout()">Logout</button>
+  </header>
+
+
+   <div class="layout">
+    <div class="sidebar">
+      <h2>Menu</h2>
+      <ul>
+        <li onclick="toonOefeningen()">Oefeningen</li>
+        <li onclick="toonGebruikers()">Gebruikers</li>
+      </ul>
+    </div>
+
+    <div class="main-content exercise-list" id="lijst">
+      <!-- Hier komt jouw oefeningenlijst etc -->
+    </div>
+  </div>
+
+
+  <button class="add-btn" onclick="voegToe()">+</button>
+
+  <script>
+    const oefeningen = [
+      "Squat",
+      "Push-up",
+      "Dip",
+      "Plank",
+      "Paardentrap",
+      "Burpee"
+    ];
+
+    function renderOefeningen() {
+      const lijst = document.getElementById("lijst");
+      lijst.innerHTML = "";
+
+      oefeningen.forEach(naam => {
+        const div = document.createElement("div");
+        div.className = "exercise";
+        div.innerHTML = `
+          <div>${naam}</div>
+          <div class="actions">
+            <button onclick="bewerken('${naam}')">⚙️</button>
+            <button onclick="verwijderen('${naam}')">🗑️</button>
+          </div>
+        `;
+        lijst.appendChild(div);
+      });
+    }
+
+    function bewerken(naam) {
+       const lijst = document.getElementById("lijst");
+  lijst.innerHTML = `
+    <div class="form-container">
+      <button class="back-btn" onclick="renderOefeningen()">⬅ Terug</button>
+      <h3>Oefening veranderen</h3>
+      <label for="titel">Titel:</label>
+      <input type="text" id="titel" value="${naam}">
+
+      <label for="inst-nl">Instructie (NL):</label>
+      <textarea id="inst-nl" rows="4" placeholder="Uitleg in het Nederlands..."></textarea>
+
+      <label for="inst-eng">Instructie (ENG):</label>
+      <textarea id="inst-eng" rows="4" placeholder="Instructions in English..."></textarea>
+
+      <button onclick="opslaanBewerking('${naam}')">Opslaan</button>
+    </div>
+  `;
+    }
+function opslaanBewerking(oudNaam) {
+  const nieuweTitel = document.getElementById("titel").value.trim();
+  const instNl = document.getElementById("inst-nl").value.trim();
+  const instEng = document.getElementById("inst-eng").value.trim();
+
+  if (!nieuweTitel) {
+    alert("Titel mag niet leeg zijn.");
+    return;
+  }
+
+  // Vervang oude naam met nieuwe titel
+  const index = oefeningen.indexOf(oudNaam);
+  if (index !== -1) {
+    oefeningen[index] = nieuweTitel;
+    alert(`"${oudNaam}" is aangepast naar "${nieuweTitel}" (fictief).`);
+  }
+
+  renderOefeningen();
+}
+
+    function verwijderen(naam) {
+      if (confirm(`Weet je zeker dat je "${naam}" wilt verwijderen?`)) {
+        alert(`"${naam}" verwijderd (fictief)`);
+      }
+    }
+
+    function voegToe() {
+  const lijst = document.getElementById("lijst");
+  lijst.innerHTML = `
+    <div class="form-container">
+      <button class="back-btn" onclick="renderOefeningen()">⬅️ Terug</button>
+      <h3>Oefening toevoegen</h3>
+      <label for="titel">Titel:</label>
+      <input type="text" id="titel" placeholder="Bijv. Burpee">
+
+      <label for="inst-nl">Instructie (NL):</label>
+      <textarea id="inst-nl" rows="4" placeholder="Uitleg in het Nederlands..."></textarea>
+
+      <label for="inst-eng">Instructie (ENG):</label>
+      <textarea id="inst-eng" rows="4" placeholder="Instructions in English..."></textarea>
+
+      <button onclick="opslaanOefening()">Toevoegen</button>
+    </div>
+  `;
+}
+function opslaanOefening() {
+  const titel = document.getElementById("titel").value.trim();
+  const instNl = document.getElementById("inst-nl").value.trim();
+  const instEng = document.getElementById("inst-eng").value.trim();
+
+  if (!titel) {
+    alert("Vul een titel in.");
+    return;
+  }
+
+  // Hier kun je ook de instructies opslaan als je wilt
+  oefeningen.push(titel);
+  alert(`"${titel}" toegevoegd (fictief)`);
+
+  renderOefeningen(); // Terug naar de lijst
+}
+
+
+    function logout() {
+      alert("Uitgelogd (fictief)");
+    }
+
+    function toonOefeningen() {
+      renderOefeningen();
+    }
+
+    function toonGebruikers() {
+        const lijst = document.getElementById("lijst");
+      lijst.innerHTML = "";
+
+      oefeningen.forEach(naam => {
+        const div = document.createElement("div");
+        div.className = "exercise";
+        div.innerHTML = `
+          <div>Gebruiker</div>
+          <div class="actions">
+            <button onclick="bewerken('${naam}')">⚙️</button>
+            <button onclick="verwijderen('${naam}')">🗑️</button>
+          </div>
+        `;
+        lijst.appendChild(div);
+      });
+    }
+
+    renderOefeningen(); // init
+  </script>
+</body>
+</html>
