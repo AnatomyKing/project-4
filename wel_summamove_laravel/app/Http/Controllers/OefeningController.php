@@ -26,9 +26,18 @@ class OefeningController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        //
-    }
+{
+    $validated = $request->validate([
+        'naam' => 'required|string|max:100',
+        'beschrijving_nl' => 'required|string',
+        'beschrijving_en' => 'nullable|string',
+    ]);
+
+    $oefening = Oefening::create($validated);
+
+    return response()->json($oefening, 201);
+}
+
 
     /**
      * Display the specified resource.
@@ -68,8 +77,12 @@ class OefeningController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
-    {
-        //
-    }
+    public function destroy($id)
+{
+    $oefening = Oefening::findOrFail($id);
+    $oefening->delete();
+
+    return response()->json(['message' => 'Oefening verwijderd']);
+}
+
 }

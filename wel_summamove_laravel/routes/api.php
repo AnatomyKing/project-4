@@ -1,4 +1,10 @@
 <?php 
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PrestatieController;
+use App\Http\Controllers\OefeningController;
+
+
+
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
