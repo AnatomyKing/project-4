@@ -8,7 +8,7 @@ use App\Models\Oefening;
 class OefeningController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of all oefeningen (publiek).
      */
     public function index()
     {
@@ -16,74 +16,52 @@ class OefeningController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Display the specified oefening.
      */
-    public function create()
+    public function show(Oefening $oefening)
     {
-        //
+        return response()->json($oefening);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created oefening (beveiligd).
      */
     public function store(Request $request)
-{
-    $validated = $request->validate([
-        'naam' => 'required|string|max:100',
-        'beschrijving_nl' => 'required|string',
-        'beschrijving_en' => 'nullable|string',
-    ]);
-
-    $oefening = Oefening::create($validated);
-
-    return response()->json($oefening, 201);
-}
-
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
     {
-        //
+        $validated = $request->validate([
+            'naam' => 'required|string|max:100',
+            'beschrijving_nl' => 'required|string',
+            'beschrijving_en' => 'nullable|string',
+        ]);
+
+        $oefening = Oefening::create($validated);
+
+        return response()->json($oefening, 201);
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Update the specified oefening (beveiligd).
      */
-    public function edit(string $id)
+    public function update(Request $request, Oefening $oefening)
     {
-        //
+        $validated = $request->validate([
+            'naam' => 'required|string|max:100',
+            'beschrijving_nl' => 'required|string',
+            'beschrijving_en' => 'nullable|string',
+        ]);
+
+        $oefening->update($validated);
+
+        return response()->json($oefening);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Remove the specified oefening (beveiligd).
      */
-   public function update(Request $request, $id)
-{
-    $oefening = Oefening::findOrFail($id);
+    public function destroy(Oefening $oefening)
+    {
+        $oefening->delete();
 
-    $validated = $request->validate([
-        'naam' => 'required|string|max:100',
-        'beschrijving_nl' => 'required|string',
-        'beschrijving_en' => 'nullable|string',
-    ]);
-
-    $oefening->update($validated);
-
-    return response()->json($oefening);
-}
-
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
-{
-    $oefening = Oefening::findOrFail($id);
-    $oefening->delete();
-
-    return response()->json(['message' => 'Oefening verwijderd']);
-}
-
+        return response()->json(['message' => 'Oefening verwijderd']);
+    }
 }

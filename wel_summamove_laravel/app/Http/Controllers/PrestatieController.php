@@ -2,63 +2,90 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Prestatie;
 use Illuminate\Http\Request;
 
 class PrestatieController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Haal alle prestaties op van de ingelogde gebruiker.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $user = $request->user();
+        $prestaties = Prestatie::where('user_id', $user->id)->get();
+
+        return response()->json($prestaties);
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
+     * Maak een nieuwe prestatie aan voor de ingelogde gebruiker.
      */
     public function store(Request $request)
     {
-        //
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'oefening_id' => 'required|exists:oefeningen,id',
+            'resultaat' => 'required|string',
+            // voeg hier eventueel meer velden toe
+        ]);
+
+        $validated['user_id'] = $user->id;
+
+        $prestatie = Prestatie::create($validated);
+
+        return response()->json($prestatie, 201);
     }
 
     /**
-     * Display the specified resource.
+     * Toon een specifieke prestatie (alleen van ingelogde gebruiker).
      */
-    public function show(string $id)
+    public function show(Request $request, Prestatie $prestatie)
     {
-        //
+        $user = $request->user();
+
+        if ($prestatie->user_id !== $user->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        return response()->json($prestatie);
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Update een prestatie (alleen van ingelogde gebruiker).
      */
-    public function edit(string $id)
+    public function update(Request $request, Prestatie $prestatie)
     {
-        //
+        $user = $request->user();
+
+        if ($prestatie->user_id !== $user->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $validated = $request->validate([
+            'resultaat' => 'sometimes|required|string',
+            // andere velden die geüpdatet kunnen worden
+        ]);
+
+        $prestatie->update($validated);
+
+        return response()->json($prestatie);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Verwijder een prestatie (alleen van ingelogde gebruiker).
      */
-    public function update(Request $request, string $id)
+    public function destroy(Request $request, Prestatie $prestatie)
     {
-        //
-    }
+        $user = $request->user();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        if ($prestatie->user_id !== $user->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $prestatie->delete();
+
+        return response()->json(null, 204);
     }
 }
