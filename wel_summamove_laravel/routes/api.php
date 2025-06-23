@@ -13,6 +13,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/oefeningen', [OefeningController::class, 'index']);
 Route::get('/oefeningen/{oefening}', [OefeningController::class, 'show']);
 
+
 // Beveiligde routes (auth:sanctum)
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'me']);
@@ -29,6 +30,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/oefeningen/{oefening}', [OefeningController::class, 'update']);
     Route::delete('/oefeningen/{oefening}', [OefeningController::class, 'destroy']);
 
+    Route::apiResource('/users', UserController::class)->except(['index']);
  
 });
-   Route::apiResource('/users', UserController::class);
+  
+Route::get('/users', [UserController::class, 'index']);

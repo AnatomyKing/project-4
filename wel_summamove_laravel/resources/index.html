@@ -6,6 +6,13 @@
   <link rel="stylesheet" href="css/index.css">
 </head>
 <body>   
+    <div id="login-scherm" style="display: none;">
+  <h3>Inloggen</h3>
+  <input type="email" id="login-email" placeholder="E-mailadres" />
+  <input type="password" id="login-wachtwoord" placeholder="Wachtwoord" />
+  <button onclick="inloggen()">Inloggen</button>
+</div>
+
     <header class="header-flex">
    <h2> Summa Move Beheer</h2>
 <img id="logo" src="img/logo-1861420_1280-Photoroom.png">
@@ -34,6 +41,7 @@
   let oefeningen = []; // Lege array, wordt gevuld via API
   let gebruikers = [];
 
+  
   // Ophalen van oefeningen via API
   async function haalOefeningenOp() {
     try {
@@ -90,28 +98,44 @@
   }
 
   // Opslaan van bewerking (hier kun je fetch POST/PUT toevoegen)
-  async function opslaanBewerking(id) {
-    const nieuweTitel = document.getElementById("titel").value.trim();
-    const instNl = document.getElementById("inst-nl").value.trim();
-    const instEng = document.getElementById("inst-eng").value.trim();
+ async function opslaanBewerking(id) {
+  const nieuweTitel = document.getElementById("titel").value.trim();
+  const instNl = document.getElementById("inst-nl").value.trim();
+  const instEng = document.getElementById("inst-eng").value.trim();
 
-    if (!nieuweTitel) {
-      alert("Titel mag niet leeg zijn.");
-      return;
-    }
-
-    // Hier zou je een API call doen om de oefening bij te werken
-    // Voor nu update je lokaal (fictief)
-    const index = oefeningen.findIndex(o => o.id === id);
-    if (index !== -1) {
-      oefeningen[index].naam = nieuweTitel;
-      oefeningen[index].beschrijving_nl = instNl;
-      oefeningen[index].beschrijving_en = instEng;
-      alert(`Oefening "${nieuweTitel}" is aangepast (fictief).`);
-    }
-
-    renderOefeningen();
+  if (!nieuweTitel) {
+    alert("Titel mag niet leeg zijn.");
+    return;
   }
+
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/api/oefeningen/${id}`, {
+      method: "PUT",
+      headers: {
+  'Authorization': 'Bearer ' + localStorage.getItem('token'),
+  'Content-Type': 'application/json',
+  'Accept': 'application/json'
+}
+,
+      body: JSON.stringify({
+        naam: nieuweTitel,
+        beschrijving_nl: instNl,
+        beschrijving_en: instEng
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Update mislukt");
+    }
+
+    alert(`Oefening "${nieuweTitel}" is succesvol opgeslagen.`);
+    haalOefeningenOp(); // herlaad lijst
+  } catch (err) {
+    alert("Fout bij opslaan: " + err.message);
+  }
+}
+
 
   // Verwijderen oefening (fictief, je kunt API call toevoegen)
   async function verwijderen(id) {
@@ -150,35 +174,51 @@
   }
 
   // Opslaan nieuwe oefening (fictief)
-  async function opslaanOefening() {
-    const titel = document.getElementById("titel").value.trim();
-    const instNl = document.getElementById("inst-nl").value.trim();
-    const instEng = document.getElementById("inst-eng").value.trim();
+ async function opslaanOefening() {
+  const titel = document.getElementById("titel").value.trim();
+  const instNl = document.getElementById("inst-nl").value.trim();
+  const instEng = document.getElementById("inst-eng").value.trim();
 
-    if (!titel) {
-      alert("Vul een titel in.");
-      return;
-    }
+  if (!titel) {
+    alert("Vul een titel in.");
+    return;
+  }
 
-    // Hier kan je API POST call toevoegen om oefening op te slaan
-    // Fictief toevoegen lokaal:
-    const nieuwId = oefeningen.length ? Math.max(...oefeningen.map(o => o.id)) + 1 : 1;
-    oefeningen.push({
-      id: nieuwId,
-      naam: titel,
-      beschrijving_nl: instNl,
-      beschrijving_en: instEng,
-      afbeelding_url: null
+  try {
+    const response = await fetch('http://127.0.0.1:8000/api/oefeningen', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + localStorage.getItem('token'),
+        // eventueel: 'Authorization': 'Bearer <token>' als je JWT of sanctum gebruikt
+      },
+      body: JSON.stringify({
+        naam: titel,
+        beschrijving_nl: instNl,
+        beschrijving_en: instEng
+      })
     });
 
-    alert(`"${titel}" toegevoegd (fictief).`);
-    renderOefeningen();
-  }
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Toevoegen mislukt');
+    }
 
-  // Logout (fictief)
-  function logout() {
-    alert("Uitgelogd (fictief)");
+    const nieuweOefening = await response.json();
+    alert(`Oefening "${nieuweOefening.naam}" is succesvol toegevoegd.`);
+    haalOefeningenOp(); // herlaad lijst
+  } catch (err) {
+    alert("Fout bij toevoegen: " + err.message);
   }
+}
+
+//logout
+  function logout() {
+  localStorage.removeItem("token");
+  alert("Je bent uitgelogd.");
+  location.reload(); // herlaad de pagina om login-scherm te tonen
+}
+
 
   function renderGebruikers() {
     const lijst = document.getElementById("lijst");
@@ -221,6 +261,54 @@ async function haalGebruikersOp() {
 
   // Initialisatie
   toonOefeningen();
+  // Initialisatie
+const token = localStorage.getItem("token");
+
+if (token) {
+  haalOefeningenOp();
+} else {
+  document.getElementById("login-scherm").style.display = "block";
+}
+
+
+  async function inloggen() {
+  const email = document.getElementById("login-email").value.trim();
+  const wachtwoord = document.getElementById("login-wachtwoord").value;
+
+  if (!email || !wachtwoord) {
+    return alert("Vul zowel e-mailadres als wachtwoord in.");
+  }
+
+  try {
+    const response = await fetch("http://127.0.0.1:8000/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: JSON.stringify({
+        email: email,
+        password: wachtwoord,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Login mislukt");
+    }
+
+    localStorage.setItem("token", data.token);
+    alert("Succesvol ingelogd!");
+
+    document.getElementById("login-scherm").style.display = "none";
+    haalOefeningenOp();
+  } catch (err) {
+    alert("Fout bij inloggen: " + err.message);
+  }
+}
+
+  
 </script>
 </body>
 </html>
