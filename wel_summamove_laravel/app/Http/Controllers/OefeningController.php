@@ -29,9 +29,10 @@ class OefeningController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'naam' => 'required|string|max:100',
-            'beschrijving_nl' => 'required|string',
-            'beschrijving_en' => 'nullable|string',
+            'naam'             => 'required|string|max:100',
+            'beschrijving_nl'  => 'required|string',
+            'beschrijving_en'  => 'nullable|string',
+            'afbeelding_url'   => 'nullable|url',    // ← toegevoegd
         ]);
 
         $oefening = Oefening::create($validated);
@@ -45,9 +46,10 @@ class OefeningController extends Controller
     public function update(Request $request, Oefening $oefening)
     {
         $validated = $request->validate([
-            'naam' => 'required|string|max:100',
-            'beschrijving_nl' => 'required|string',
-            'beschrijving_en' => 'nullable|string',
+            'naam'             => 'required|string|max:100',
+            'beschrijving_nl'  => 'required|string',
+            'beschrijving_en'  => 'nullable|string',
+            'afbeelding_url'   => 'nullable|url',    // ← toegevoegd
         ]);
 
         $oefening->update($validated);

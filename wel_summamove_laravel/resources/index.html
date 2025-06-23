@@ -91,6 +91,9 @@
         <textarea id="inst-nl" rows="4">${oefening.beschrijving_nl ?? ''}</textarea>
         <label for="inst-eng">Instructie (ENG):</label>
         <textarea id="inst-eng" rows="4">${oefening.beschrijving_en ?? ''}</textarea>
+        <label for="afbeelding-url">Afbeelding URL:</label>
+        <input type="text" id="afbeelding-url" value="${oefening.afbeelding_url || ''}" placeholder="https://voorbeeld.com/afbeelding.png" oninput="document.getElementById('afbeelding-preview').src=this.value; document.getElementById('afbeelding-preview').style.display=this.value ? 'block' : 'none';">
+        <img id="afbeelding-preview" src="${oefening.afbeelding_url || ''}" alt="Voorvertoning afbeelding" style="max-width: 200px; display: ${oefening.afbeelding_url ? 'block' : 'none'}; margin-top: 10px;">
         <button onclick="opslaanBewerking(${id})">Opslaan</button>
       </div>
     `;
@@ -138,7 +141,8 @@
       body: JSON.stringify({
         naam: nieuweTitel,
         beschrijving_nl: instNl,
-        beschrijving_en: instEng
+        beschrijving_en: instEng,
+        afbeelding_url: document.getElementById("afbeelding-url").value.trim() || null
       })
     });
 
@@ -214,7 +218,6 @@ async function opslaanGebruikerBewerking(id) {
 
     const result = await response.json();
     console.log(result.message); // "Gebruiker verwijderd"
-    // eventueel: lijst verversen
   } catch (error) {
     console.error('Fout bij verwijderen:', error);
   }
@@ -223,7 +226,6 @@ async function opslaanGebruikerBewerking(id) {
 //Verwijderen oefening
 async function deleteOefening(id) {
   const response = await fetch(`http://127.0.0.1:8000/api/oefeningen/${id}`, {
-
     method: 'DELETE',
     headers: {
       'Authorization': 'Bearer ' + token,
@@ -256,6 +258,9 @@ async function deleteOefening(id) {
         <textarea id="inst-nl" rows="4"></textarea>
         <label for="inst-eng">Instructie (ENG):</label>
         <textarea id="inst-eng" rows="4"></textarea>
+        <label for="afbeelding-url">Afbeelding URL:</label>
+        <input type="text" id="afbeelding-url" placeholder="https://voorbeeld.com/afbeelding.png" oninput="document.getElementById('afbeelding-preview').src=this.value; document.getElementById('afbeelding-preview').style.display=this.value ? 'block' : 'none';">
+        <img id="afbeelding-preview" src="" alt="Voorvertoning afbeelding" style="max-width: 200px; display: none; margin-top: 10px;">
         <button onclick="opslaanOefening()">Toevoegen</button>
       </div>
     `;
@@ -294,12 +299,12 @@ async function deleteOefening(id) {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + token,
-        // eventueel: 'Authorization': 'Bearer <token>' als je JWT of sanctum gebruikt
       },
       body: JSON.stringify({
         naam: titel,
         beschrijving_nl: instNl,
-        beschrijving_en: instEng
+        beschrijving_en: instEng,
+        afbeelding_url: document.getElementById("afbeelding-url").value.trim() || null
       })
     });
 
