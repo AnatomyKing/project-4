@@ -3,7 +3,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\User;
-class AuthenticationController extends Controller
+class AuthController extends Controller
 {
     public function register(Request $request)
     {
