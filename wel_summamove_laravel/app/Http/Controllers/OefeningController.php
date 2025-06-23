@@ -11,7 +11,7 @@ class OefeningController extends Controller
      */
     public function index()
     {
-        //
+        return Oefening::all();
     }
 
     /**
@@ -49,10 +49,21 @@ class OefeningController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+   public function update(Request $request, $id)
+{
+    $oefening = Oefening::findOrFail($id);
+
+    $validated = $request->validate([
+        'naam' => 'required|string|max:100',
+        'beschrijving_nl' => 'required|string',
+        'beschrijving_en' => 'nullable|string',
+    ]);
+
+    $oefening->update($validated);
+
+    return response()->json($oefening);
+}
+
 
     /**
      * Remove the specified resource from storage.
