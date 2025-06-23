@@ -66,7 +66,7 @@
         <div>${oefening.naam}</div>
         <div class="actions">
           <button onclick="bewerken(${oefening.id})">⚙️</button>
-          <button onclick="verwijderen(${oefening.id})">🗑️</button>
+          <button onclick="deleteOefening(${oefening.id})">🗑️</button>
         </div>
       `;
       lijst.appendChild(div);
@@ -140,7 +140,7 @@
   // Verwijderen gebruiker
   async function deleteUser(userId) {
   try {
-    const response = await fetch(`/api/users/${userId}`, {
+    const response = await fetch(`http:127.0.0.1:8000/api/users/${userId}`, {
       method: 'DELETE',
       headers: {
         'Authorization': 'Bearer ' + token,
@@ -158,12 +158,14 @@
   } catch (error) {
     console.error('Fout bij verwijderen:', error);
   }
+  haalGebruikersOp();
 }
 //Verwijderen oefening
 async function deleteOefening(id) {
 
 
-  const response = await fetch(`/api/oefeningen/${id}`, {
+  const response = await fetch(`http://127.0.0.1:8000/api/oefeningen/${id}`, {
+
     method: 'DELETE',
     headers: {
       'Authorization': 'Bearer ' + token,
@@ -178,6 +180,7 @@ async function deleteOefening(id) {
   } else {
     console.error('Fout bij verwijderen:', result);
   }
+  haalOefeningenOp();
 }
 
 
@@ -261,7 +264,7 @@ async function deleteOefening(id) {
         <div>${gebruiker.name}</div>
         <div class="actions">
           <button onclick="bewerken(${gebruiker.id})">⚙️</button>
-          <button onclick="verwijderen(${gebruiker.id})">🗑️</button>
+          <button onclick="deleteUser(${gebruiker.id})">🗑️</button>
         </div>
       `;
       lijst.appendChild(div);
