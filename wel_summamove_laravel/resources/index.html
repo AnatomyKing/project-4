@@ -112,7 +112,7 @@
     const response = await fetch(`http://127.0.0.1:8000/api/oefeningen/${id}`, {
       method: "PUT",
       headers: {
-  'Authorization': 'Bearer ' + localStorage.getItem('token'),
+    'Authorization': 'Bearer ' + token,
   'Content-Type': 'application/json',
   'Accept': 'application/json'
 }
@@ -137,20 +137,50 @@
 }
 
 
-  // Verwijderen oefening (fictief, je kunt API call toevoegen)
-  async function verwijderen(id) {
-    const oefening = oefeningen.find(o => o.id === id);
-    if (!oefening) return alert('Oefening niet gevonden');
-    
-    if (confirm(`Weet je zeker dat je "${oefening.naam}" wilt verwijderen?`)) {
-      // API call kan hier
+  // Verwijderen gebruiker
+  async function deleteUser(userId) {
+  try {
+    const response = await fetch(`/api/users/${userId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Accept': 'application/json'
+      }
+    });
 
-      // Fictief lokaal verwijderen:
-      oefeningen = oefeningen.filter(o => o.id !== id);
-      alert(`"${oefening.naam}" verwijderd (fictief).`);
-      renderOefeningen();
+    if (!response.ok) {
+      throw new Error('Verwijderen mislukt');
     }
+
+    const result = await response.json();
+    console.log(result.message); // "Gebruiker verwijderd"
+    // eventueel: lijst verversen
+  } catch (error) {
+    console.error('Fout bij verwijderen:', error);
   }
+}
+//Verwijderen oefening
+async function deleteOefening(id) {
+
+
+  const response = await fetch(`/api/oefeningen/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'Accept': 'application/json'
+    }
+  });
+
+  const result = await response.json();
+
+  if (response.ok) {
+    console.log(result.message); // "Oefening verwijderd"
+  } else {
+    console.error('Fout bij verwijderen:', result);
+  }
+}
+
+
 
   // Toevoegen nieuwe oefening
   function voegToe() {
@@ -173,7 +203,7 @@
     `;
   }
 
-  // Opslaan nieuwe oefening (fictief)
+  // Opslaan nieuwe oefening
  async function opslaanOefening() {
   const titel = document.getElementById("titel").value.trim();
   const instNl = document.getElementById("inst-nl").value.trim();
@@ -189,7 +219,7 @@
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + localStorage.getItem('token'),
+        'Authorization': 'Bearer ' + token,
         // eventueel: 'Authorization': 'Bearer <token>' als je JWT of sanctum gebruikt
       },
       body: JSON.stringify({
@@ -270,7 +300,7 @@ if (token) {
   document.getElementById("login-scherm").style.display = "block";
 }
 
-
+// inloggen
   async function inloggen() {
   const email = document.getElementById("login-email").value.trim();
   const wachtwoord = document.getElementById("login-wachtwoord").value;
@@ -298,8 +328,11 @@ if (token) {
       throw new Error(data.message || "Login mislukt");
     }
 
-    localStorage.setItem("token", data.token);
+    localStorage.setItem("token", data.access_token);
+    console.log(data.access_token);
+
     alert("Succesvol ingelogd!");
+
 
     document.getElementById("login-scherm").style.display = "none";
     haalOefeningenOp();
