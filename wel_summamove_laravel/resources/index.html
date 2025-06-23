@@ -1,45 +1,45 @@
 <!DOCTYPE html>
 <html lang="nl">
-<head>
-  <meta charset="UTF-8" />
-  <title>Summa Move Beheer</title>
-  <link rel="stylesheet" href="css/index.css">
-</head>
-<body>   
+  <head>
+    <meta charset="UTF-8" />
+    <title>Summa Move Beheer</title>
+    <link rel="stylesheet" href="css/index.css">
+  </head>
+  <body>
     <div id="login-scherm" style="display: none;">
-  <h3>Inloggen</h3>
-  <input type="email" id="login-email" placeholder="E-mailadres" />
-  <input type="password" id="login-wachtwoord" placeholder="Wachtwoord" />
-  <button onclick="inloggen()">Inloggen</button>
-</div>
+      <h3>Inloggen</h3>
+      <input type="email" id="login-email" placeholder="E-mailadres" />
+      <input type="password" id="login-wachtwoord" placeholder="Wachtwoord" />
+      <button onclick="inloggen()">Inloggen</button>
+    </div>
 
     <header class="header-flex">
-   <h2> Summa Move Beheer</h2>
-<img id="logo" src="img/logo-1861420_1280-Photoroom.png">
-<button onclick="logout()">Logout</button>
-  </header>
+      <h2> Summa Move Beheer</h2>
+      <img id="logo" src="img/logo-1861420_1280-Photoroom.png">
+      <button onclick="logout()">Logout</button>
+    </header>
 
+    <div class="layout">
+      <div class="sidebar">
+        <h2>Menu</h2>
+        <ul>
+          <li onclick="toonOefeningen()">Oefeningen</li>
+          <li onclick="toonGebruikers()">Gebruikers</li>
+        </ul>
+      </div>
 
-   <div class="layout">
-    <div class="sidebar">
-      <h2>Menu</h2>
-      <ul>
-        <li onclick="toonOefeningen()">Oefeningen</li>
-        <li onclick="toonGebruikers()">Gebruikers</li>
-      </ul>
+      <div class="main-content exercise-list" id="lijst">
+        <!-- Hier komt jouw oefeningenlijst etc -->
+      </div>
     </div>
 
-    <div class="main-content exercise-list" id="lijst">
-      <!-- Hier komt jouw oefeningenlijst etc -->
-    </div>
-  </div>
+    <button class="add-btn" onclick="voegToe()">+</button>
 
-
-  <button class="add-btn" onclick="voegToe()">+</button>
-
-  <script>
+    <!--FUNCTIES-->
+    <script>
   let oefeningen = []; // Lege array, wordt gevuld via API
   let gebruikers = [];
+  let huidigeTab = 'oefeningen';
 
   
   // Ophalen van oefeningen via API
@@ -75,27 +75,45 @@
 
   // Bewerken - toont formulier, haalt huidige gegevens op
   function bewerken(id) {
+  const lijst = document.getElementById("lijst");
+
+  if (huidigeTab === 'oefeningen') {
     const oefening = oefeningen.find(o => o.id === id);
     if (!oefening) return alert('Oefening niet gevonden');
 
-    const lijst = document.getElementById("lijst");
     lijst.innerHTML = `
       <div class="form-container">
         <button class="back-btn" onclick="haalOefeningenOp()">⬅ Terug</button>
-        <h3>Oefening veranderen</h3>
+        <h3>Oefening bewerken</h3>
         <label for="titel">Titel:</label>
         <input type="text" id="titel" value="${oefening.naam}">
-
         <label for="inst-nl">Instructie (NL):</label>
-        <textarea id="inst-nl" rows="4" placeholder="Uitleg in het Nederlands...">${oefening.beschrijving_nl ?? ''}</textarea>
-
+        <textarea id="inst-nl" rows="4">${oefening.beschrijving_nl ?? ''}</textarea>
         <label for="inst-eng">Instructie (ENG):</label>
-        <textarea id="inst-eng" rows="4" placeholder="Instructions in English...">${oefening.beschrijving_en ?? ''}</textarea>
-
+        <textarea id="inst-eng" rows="4">${oefening.beschrijving_en ?? ''}</textarea>
         <button onclick="opslaanBewerking(${id})">Opslaan</button>
       </div>
     `;
+  } else if (huidigeTab === 'gebruikers') {
+    const gebruiker = gebruikers.find(g => g.id === id);
+    if (!gebruiker) return alert('Gebruiker niet gevonden');
+
+    lijst.innerHTML = `
+      <div class="form-container">
+        <button class="back-btn" onclick="haalGebruikersOp()">⬅ Terug</button>
+        <h3>Gebruiker bewerken</h3>
+        <label for="naam">Naam:</label>
+        <input type="text" id="naam" value="${gebruiker.name}">
+        <label for="email">E-mailadres:</label>
+        <input type="email" id="email" value="${gebruiker.email}">
+        <label for="wachtwoord">Nieuw wachtwoord:</label>
+        <input type="password" id="wachtwoord" placeholder="Laat leeg om niet te wijzigen">
+        <button onclick="opslaanGebruikerBewerking(${id})">Opslaan</button>
+      </div>
+    `;
   }
+}
+
 
   // Opslaan van bewerking (hier kun je fetch POST/PUT toevoegen)
  async function opslaanBewerking(id) {
@@ -136,6 +154,48 @@
   }
 }
 
+async function opslaanGebruikerBewerking(id) {
+  const naam = document.getElementById("naam").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const wachtwoord = document.getElementById("wachtwoord").value.trim();
+
+  if (!naam || !email) {
+    return alert("Naam en e-mailadres zijn verplicht.");
+  }
+
+  const payload = {
+    name: naam,
+    email: email
+  };
+
+  if (wachtwoord) {
+    payload.password = wachtwoord;
+    payload.password_confirmation = wachtwoord;
+  }
+
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/api/users/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token,
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message || "Bewerken mislukt");
+    }
+
+    alert("Gebruiker succesvol bijgewerkt.");
+    haalGebruikersOp();
+  } catch (err) {
+    alert("Fout bij bewerken: " + err.message);
+  }
+}
+
 
   // Verwijderen gebruiker
   async function deleteUser(userId) {
@@ -162,8 +222,6 @@
 }
 //Verwijderen oefening
 async function deleteOefening(id) {
-
-
   const response = await fetch(`http://127.0.0.1:8000/api/oefeningen/${id}`, {
 
     method: 'DELETE',
@@ -183,28 +241,41 @@ async function deleteOefening(id) {
   haalOefeningenOp();
 }
 
-
-
   // Toevoegen nieuwe oefening
   function voegToe() {
-    const lijst = document.getElementById("lijst");
+  const lijst = document.getElementById("lijst");
+
+  if (huidigeTab === 'oefeningen') {
     lijst.innerHTML = `
       <div class="form-container">
         <button class="back-btn" onclick="haalOefeningenOp()">⬅ Terug</button>
         <h3>Oefening toevoegen</h3>
         <label for="titel">Titel:</label>
         <input type="text" id="titel" placeholder="Bijv. Burpee">
-
         <label for="inst-nl">Instructie (NL):</label>
-        <textarea id="inst-nl" rows="4" placeholder="Uitleg in het Nederlands..."></textarea>
-
+        <textarea id="inst-nl" rows="4"></textarea>
         <label for="inst-eng">Instructie (ENG):</label>
-        <textarea id="inst-eng" rows="4" placeholder="Instructions in English..."></textarea>
-
+        <textarea id="inst-eng" rows="4"></textarea>
         <button onclick="opslaanOefening()">Toevoegen</button>
       </div>
     `;
+  } else if (huidigeTab === 'gebruikers') {
+    lijst.innerHTML = `
+      <div class="form-container">
+        <button class="back-btn" onclick="haalGebruikersOp()">⬅ Terug</button>
+        <h3>Gebruiker toevoegen</h3>
+        <label for="naam">Naam:</label>
+        <input type="text" id="naam" placeholder="Naam">
+        <label for="email">E-mailadres:</label>
+        <input type="email" id="email" placeholder="Email">
+        <label for="wachtwoord">Wachtwoord:</label>
+        <input type="password" id="wachtwoord" placeholder="Wachtwoord">
+        <button onclick="opslaanGebruiker()">Toevoegen</button>
+      </div>
+    `;
   }
+}
+
 
   // Opslaan nieuwe oefening
  async function opslaanOefening() {
@@ -244,8 +315,47 @@ async function deleteOefening(id) {
     alert("Fout bij toevoegen: " + err.message);
   }
 }
+//Opslaan gebruiker
+async function opslaanGebruiker() {
+  const naam = document.getElementById("naam").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const wachtwoord = document.getElementById("wachtwoord").value.trim();
 
-//logout
+  if (!naam || !email || !wachtwoord) {
+    return alert("Vul alle velden in.");
+  }
+
+  try {
+    const response = await fetch('http://127.0.0.1:8000/api/users', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token,
+      },
+      body: JSON.stringify({
+        name: naam,
+        email: email,
+        password: wachtwoord,
+        password_confirmation: wachtwoord // vereist als je Laravel validatie gebruikt
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Gebruiker toevoegen mislukt');
+    }
+
+    const nieuweGebruiker = await response.json();
+    alert(`Gebruiker "${nieuweGebruiker.name}" toegevoegd.`);
+    haalGebruikersOp();
+  } catch (err) {
+    alert("Fout bij toevoegen: " + err.message);
+  }
+}
+
+
+
+//Logout
   function logout() {
   localStorage.removeItem("token");
   alert("Je bent uitgelogd.");
@@ -282,13 +392,15 @@ async function haalGebruikersOp() {
     }
   }
 
-  // Toon oefeningen (haal eerst op)
+  // Toon oefeningen
   function toonOefeningen() {
+    huidigeTab = "oefeningen";
     haalOefeningenOp();
   }
 
-  // Toon gebruikers (fictief)
+  // Toon gebruikers
   function toonGebruikers() {
+    huidigeTab = "gebruikers";
     haalGebruikersOp();
   }
 
@@ -346,5 +458,5 @@ if (token) {
 
   
 </script>
-</body>
+  </body>
 </html>
