@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Auth;
@@ -10,15 +11,15 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $attr = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|unique:users,email',
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|string|email|unique:users,email',
             'password' => 'required|string|min:6|confirmed'
         ]);
 
-        $user = User::create([
-            'name' => $attr['name'],
+        User::create([
+            'name'     => $attr['name'],
+            'email'    => $attr['email'],
             'password' => bcrypt($attr['password']),
-            'email' => $attr['email']
         ]);
 
         return response()->json(['message' => 'Registration successful'], 200);
@@ -26,35 +27,41 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        try {
-            $attr = $request->validate([
-                'email' => 'required|string|email',
-                'password' => 'required|string|min:6'
-            ]);
+        $attr = $request->validate([
+            'email'    => 'required|string|email',
+            'password' => 'required|string|min:6'
+        ]);
 
-            if (!Auth::attempt($attr)) {
-                return response()->json(['message' => 'Credentials not match'], 401);
-            }
-
-            $token = auth()->user()->createToken('API Token')->plainTextToken;
-
-            return response()->json([
-                'access_token' => $token,
-                'token_type' => 'Bearer'
-            ], 200);
-
-        } catch (\Exception $e) {
-            // Foutmelding direct teruggeven in JSON, handig voor debugging
-            return response()->json([
-                'error' => $e->getMessage(),
-                'trace' => $e->getTrace()
-            ], 500);
+        if (!Auth::attempt($attr)) {
+            return response()->json(['message' => 'Credentials not match'], 401);
         }
+
+        $user  = Auth::user();
+        $token = $user->createToken('API Token')->plainTextToken;
+
+        return response()->json([
+            'access_token' => $token,
+            'token_type'   => 'Bearer',
+            'user'         => [
+                'id'    => $user->id,
+                'name'  => $user->name,
+                'email' => $user->email,
+            ],
+        ], 200);
     }
 
-    public function logout()
+    public function me(Request $request)
     {
-        auth()->user()->tokens()->delete();
+        return response()->json([
+            'id'    => $request->user()->id,
+            'name'  => $request->user()->name,
+            'email' => $request->user()->email,
+        ]);
+    }
+
+    public function logout(Request $request)
+    {
+        $request->user()->tokens()->delete();
         return response()->json(['message' => 'Tokens Revoked'], 200);
     }
 }

@@ -8,16 +8,17 @@ class GBAppTexts implements AppTexts {
   @override String get aboutNav => 'About';
   @override String get pleaseLogIn => 'Please log in!';
 
-  // home
-  @override String get homeTitle => 'Summa Move';
-  @override String get tagline   => 'Basic equipment, better results';
-  @override String get headline  => 'NEXT-LEVEL UPPER-BODY STRENGTH';
-  @override String get login     => 'Login';
-  @override String get logout    => 'Logout';
-  @override String get emailHint => 'E-mail';
-  @override String get passwordHint => 'Password';
-  @override String get loginFailed => 'Login failed';
-  @override String get loggedInAs  => 'Logged in as';
+// home
+  @override String get homeTitle     => 'Summa Move';
+  @override String get tagline       => 'With an account, you can easily track your performance!';
+  @override String get headline      => 'TRACK YOUR PROGRESS. MOVE YOUR SUMMA.';
+  @override String get login         => 'Login';
+  @override String get logout        => 'Logout';
+  @override String get emailHint     => 'Email';
+  @override String get passwordHint  => 'Password';
+  @override String get loginFailed   => 'Login failed';
+  @override String get loggedInAs    => 'Logged in as';
+
 
   // workout
   @override String get searchWorkoutsHint => 'Search workouts';
@@ -50,19 +51,19 @@ class GBAppTexts implements AppTexts {
   @override String get updateSuccess     => 'Updated!';
   @override String get updateFailed      => 'Update failed';
 
-  // about
+// about
   @override String get aboutTitle       => 'About Summa Move';
   @override String get appName          => 'Summa Move';
   @override String get versionLabel     => 'Version';
   @override String get version          => '1.0.0+1';
   @override String get sectionInleiding => 'Introduction';
-  @override String get textInleiding    => 'SummaMove is a complete system …';
+  @override String get textInleiding    => 'Summa Move is an initiative to get students from Summa College to move more. Through the app, students can perform exercises in and around school. Performances are tracked automatically.';
   @override String get sectionBedrijf   => 'The Company';
-  @override String get textBedrijf      => 'SummaMove is a young startup …';
+  @override String get textBedrijf      => 'Summa Move is a young startup aiming to first roll out their fitness app within Summa College, and later offer it to other schools.';
   @override String get sectionProbleem  => 'Problem Statement';
-  @override String get textProbleem     => 'Currently there is no automated …';
-  @override String get sectionDoelgroepen => 'Target groups';
-  @override String get textDoelgroepen    => '• Admin • Guest • Registered student';
+  @override String get textProbleem     => 'There was no system yet to easily offer exercises to students or track their performance. That’s why this app and the management system were developed to automate the process.';
+  @override String get sectionDoelgroepen => 'Target Audience';
+  @override String get textDoelgroepen    => 'Summa Move is primarily intended for Summa students to help them stay active!';
   @override String get helpSupport      => 'Help & Support';
-  @override String get helpSnackbar     => 'Send an e-mail to support@summamove.nl';
+  @override String get helpSnackbar     => 'Send an email to support@summamove.nl';
 }
