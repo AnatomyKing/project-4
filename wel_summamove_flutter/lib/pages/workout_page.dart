@@ -1,11 +1,11 @@
-// lib/pages/workout_page.dart
-
+// ignore_for_file: prefer_final_locals
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import '../models/oefening.dart';
 import '../providers/auth_provider.dart';
+import '../providers/language_provider.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/search_header.dart';
 import 'exercise_detail_page.dart';
@@ -30,7 +30,8 @@ class _WorkoutPageState extends State<WorkoutPage> {
 
   Future<void> _loadOefeningen() async {
     try {
-      final resp = await http.get(Uri.parse('http://10.0.2.2:8000/api/oefeningen'));
+      final resp =
+      await http.get(Uri.parse('http://10.0.2.2:8000/api/oefeningen'));
       if (resp.statusCode == 200) {
         final data = jsonDecode(resp.body) as List;
         final list = data.map((e) => Oefening.fromJson(e)).toList();
@@ -49,8 +50,10 @@ class _WorkoutPageState extends State<WorkoutPage> {
 
   void _onSearchChanged(String term) {
     term = term.toLowerCase();
-    final matches = _all.where((o) => o.naam.toLowerCase().contains(term)).toList();
-    final rest = _all.where((o) => !o.naam.toLowerCase().contains(term)).toList();
+    final matches =
+    _all.where((o) => o.naam.toLowerCase().contains(term)).toList();
+    final rest =
+    _all.where((o) => !o.naam.toLowerCase().contains(term)).toList();
     matches.sort((a, b) => a.naam.compareTo(b.naam));
     rest.sort((a, b) => a.naam.compareTo(b.naam));
     setState(() => _filtered = [...matches, ...rest]);
@@ -59,7 +62,9 @@ class _WorkoutPageState extends State<WorkoutPage> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
-    final title = auth.isLoggedIn ? "${auth.name}'s Workouts" : 'Workouts';
+    final lang = context.watch<LanguageProvider>();
+    final texts = lang.texts;
+    final title = auth.isLoggedIn ? "${auth.name}'s Workouts" : texts.workoutNav;
 
     return Scaffold(
       appBar: CustomAppBar(title: title),
@@ -70,9 +75,9 @@ class _WorkoutPageState extends State<WorkoutPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SearchHeader(
-              hintText: 'Search workouts',
-              titleText: 'Any time, anywhere upper body',
-              subtitleText: 'Arms, shoulders, chest & back—no equipment needed.',
+              hintText: texts.searchWorkoutsHint,
+              titleText: texts.workoutsTitle,
+              subtitleText: texts.workoutsSubtitle,
               onChanged: _onSearchChanged,
             ),
             Expanded(
@@ -95,25 +100,32 @@ class _WorkoutPageState extends State<WorkoutPage> {
                     backgroundColor: Colors.blueGrey,
                     child: Text(
                       oef.naam[0],
-                      style: const TextStyle(fontSize: 32, color: Colors.white),
+                      style: const TextStyle(
+                          fontSize: 32, color: Colors.white),
                     ),
                   );
 
+                  final desc =
+                  oef.description(isEnglish: lang.isEnglish);
+
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 8),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => ExerciseDetailPage(oefening: oef),
+                            builder: (_) =>
+                                ExerciseDetailPage(oefening: oef),
                           ),
                         );
                       },
                       child: Card(
                         elevation: 2,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         child: Padding(
                           padding: const EdgeInsets.all(12),
                           child: Row(
@@ -122,25 +134,23 @@ class _WorkoutPageState extends State<WorkoutPage> {
                               const SizedBox(width: 16),
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment:
+                                  CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      oef.naam,
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
+                                    Text(oef.naam,
+                                        style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold)),
                                     const SizedBox(height: 4),
-                                    Text(
-                                      oef.beschrijvingNl,
-                                      style: const TextStyle(color: Colors.grey, fontSize: 14),
-                                    ),
+                                    Text(desc,
+                                        style: const TextStyle(
+                                            color: Colors.grey,
+                                            fontSize: 14)),
                                   ],
                                 ),
                               ),
-                              // purely decorative play icon
-                              const Icon(Icons.play_circle_fill, size: 32, color: Color(0xFF42877E)),
+                              const Icon(Icons.play_circle_fill,
+                                  size: 32, color: Color(0xFF42877E)),
                             ],
                           ),
                         ),

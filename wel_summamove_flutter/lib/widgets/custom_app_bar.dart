@@ -1,7 +1,7 @@
-// lib/widgets/custom_app_bar.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import '../providers/language_provider.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -9,16 +9,17 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Size get preferredSize {
-    final window = WidgetsBinding.instance.window;
-    final statusBarHeight = window.padding.top / window.devicePixelRatio;
-    return Size.fromHeight(statusBarHeight + 80);
+    final win = WidgetsBinding.instance.window;
+    return Size.fromHeight(win.padding.top / win.devicePixelRatio + 80);
   }
 
   @override
   Widget build(BuildContext context) {
+    final lang = context.watch<LanguageProvider>();
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
-        statusBarColor: Colors.grey,                 // same grey behind icons
+        statusBarColor: Colors.grey,
         statusBarIconBrightness: Brightness.light,
       ),
       child: AppBar(
@@ -26,30 +27,27 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         elevation: 0,
         automaticallyImplyLeading: Navigator.canPop(context),
         iconTheme: const IconThemeData(color: Colors.white),
-        titleSpacing: 10,                             // shift title further left
+        titleSpacing: 10,
         toolbarHeight: 80,
         systemOverlayStyle: SystemUiOverlayStyle(
           statusBarColor: Colors.grey[800],
           statusBarIconBrightness: Brightness.light,
         ),
         title: Padding(
-          padding: const EdgeInsets.only(top: 50),    // nudge it down
-          child: Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          padding: const EdgeInsets.only(top: 50),
+          child: Text(title,
+              style: const TextStyle(
+                  color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
         ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: CircleAvatar(
-              radius: 16,
-              backgroundColor: Colors.transparent,
-              child: Text('🇬🇧', style: TextStyle(fontSize: 20)),
+        actions: [
+          GestureDetector(
+            onTap: lang.toggle,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: CircleAvatar(
+                backgroundColor: Colors.transparent,
+                child: Text(lang.flag, style: const TextStyle(fontSize: 20)),
+              ),
             ),
           ),
         ],

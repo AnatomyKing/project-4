@@ -1,10 +1,10 @@
-// lib/pages/exercise_detail_page.dart
-
+// ignore_for_file: prefer_final_locals
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/oefening.dart';
 import '../providers/auth_provider.dart';
+import '../providers/language_provider.dart';
 import '../services/prestatie_service.dart';
 import '../widgets/custom_app_bar.dart';
 
@@ -25,10 +25,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
   void _start() {
     _timer?.cancel();
     _startTime = DateTime.now();
-    setState(() {
-      _running = true;
-      _elapsed = 0;
-    });
+    setState(() => _running = true);
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       setState(() => _elapsed++);
     });
@@ -39,37 +36,27 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
   Future<void> _stop() async {
     _timer?.cancel();
     final end = DateTime.now();
-    setState(() {
-      _running = false;
-    });
+    setState(() => _running = false);
 
-    // Only prompt/save if the user is logged in:
-    final auth = context.read<AuthProvider>();
-    if (auth.token == null) {
-      // not logged in → just stop without prompt
-      return;
-    }
+    final lang  = context.read<LanguageProvider>();
+    final texts = lang.texts;
+    final auth  = context.read<AuthProvider>();
 
-    // logged in → ask for reps and save
+    if (auth.token == null) return; // guest → just stop
+
     final repsCtl = TextEditingController();
     final sure = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Aantal herhalingen'),
+        title: Text(texts.repsDialogTitle),
         content: TextField(
           controller: repsCtl,
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(hintText: 'Bijv. 10'),
+          decoration: InputDecoration(hintText: texts.repsHint),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Save'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(texts.cancel)),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: Text(texts.save)),
         ],
       ),
     );
@@ -84,16 +71,13 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
         aantal: reps,
       );
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(ok ? 'Saved!' : 'Failed to save')),
+        SnackBar(content: Text(ok ? texts.saved : texts.saveFailed)),
       );
     }
   }
 
-  String _fmt(int sec) {
-    final m = (sec ~/ 60).toString().padLeft(2, '0');
-    final s = (sec % 60).toString().padLeft(2, '0');
-    return '$m:$s';
-  }
+  String _fmt(int sec) =>
+      '${(sec ~/ 60).toString().padLeft(2, '0')}:${(sec % 60).toString().padLeft(2, '0')}';
 
   @override
   void dispose() {
@@ -103,49 +87,48 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final oef = widget.oefening;
+    final lang  = context.watch<LanguageProvider>();
+    final texts = lang.texts;
+    final oef   = widget.oefening;
+
     return Scaffold(
       appBar: CustomAppBar(title: oef.naam),
       body: SingleChildScrollView(
         child: Column(
           children: [
             if (oef.afbeeldingUrl.isNotEmpty)
-              Image.network(
-                oef.afbeeldingUrl,
-                width: double.infinity,
-                height: 240,
-                fit: BoxFit.cover,
-              )
+              Image.network(oef.afbeeldingUrl,
+                  width: double.infinity, height: 240, fit: BoxFit.cover)
             else
               Container(
                 width: double.infinity,
                 height: 240,
                 color: Colors.grey,
                 child: Center(
-                  child: Text(
-                    oef.naam[0],
-                    style: const TextStyle(fontSize: 64, color: Colors.white),
-                  ),
+                  child: Text(oef.naam[0],
+                      style: const TextStyle(fontSize: 64, color: Colors.white)),
                 ),
               ),
             const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(oef.beschrijvingNl, style: const TextStyle(fontSize: 16)),
+              child: Text(oef.description(isEnglish: lang.isEnglish),
+                  style: const TextStyle(fontSize: 16)),
             ),
             const SizedBox(height: 24),
             if (!_running)
-              ElevatedButton(onPressed: _start, child: const Text('Start Timer'))
+              ElevatedButton(onPressed: _start, child: Text(texts.startTimer))
             else ...[
               Text(_fmt(_elapsed),
-                  style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+                  style: const TextStyle(
+                      fontSize: 32, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ElevatedButton(onPressed: _pause, child: const Text('Pause')),
+                  ElevatedButton(onPressed: _pause, child: Text(texts.pauseTimer)),
                   const SizedBox(width: 16),
-                  ElevatedButton(onPressed: _stop, child: const Text('Stop')),
+                  ElevatedButton(onPressed: _stop,  child: Text(texts.stopTimer)),
                 ],
               ),
             ],

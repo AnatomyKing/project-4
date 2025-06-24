@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// A reusable search bar + title/subtitle block.
 class SearchHeader extends StatelessWidget {
   final String hintText;
   final String titleText;
@@ -16,44 +15,36 @@ class SearchHeader extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Search field
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: TextField(
-            onChanged: onChanged,
-            decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.search),
-              hintText: hintText,
-              filled: true,
-              fillColor: Colors.grey[200],
-              border: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(24)),
-                borderSide: BorderSide.none,
-              ),
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: TextField(
+          onChanged: onChanged,
+          decoration: InputDecoration(
+            prefixIcon: const Icon(Icons.search),
+            hintText: hintText,
+            filled: true,
+            fillColor: Colors.grey[200],
+            border: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(24)),
+              borderSide: BorderSide.none,
             ),
           ),
         ),
-        // Title
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            titleText,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-        ),
-        // Subtitle
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          child: Text(
-            subtitleText,
-            style: const TextStyle(color: Colors.grey),
-          ),
-        ),
-      ],
-    );
-  }
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Text(titleText,
+            style:
+            const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: Text(subtitleText,
+            style: const TextStyle(color: Colors.grey)),
+      ),
+    ],
+  );
 }

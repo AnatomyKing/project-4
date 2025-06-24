@@ -1,6 +1,10 @@
+// lib/main.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'providers/auth_provider.dart';
+import 'providers/language_provider.dart';
 import 'pages/home_page.dart';
 import 'pages/workout_page.dart';
 import 'pages/performance_page.dart';
@@ -8,8 +12,11 @@ import 'pages/about_page.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => AuthProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => LanguageProvider()),
+      ],
       child: const MyApp(),
     ),
   );
@@ -23,7 +30,6 @@ class MyApp extends StatelessWidget {
       title: 'Summa Move',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        // Optionally set default bottom nav theme:
         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
           backgroundColor: Color(0xFF2C3E50),
           selectedItemColor: Colors.white,
@@ -44,7 +50,7 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
-  static const List<Widget> _pages = [
+  static const _pages = [
     HomePage(),
     WorkoutPage(),
     PerformancePage(),
@@ -53,33 +59,41 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    final auth = context.watch<AuthProvider>();
+    final texts = context.watch<LanguageProvider>().texts;
+    final auth  = context.watch<AuthProvider>();
 
     return Scaffold(
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         type: BottomNavigationBarType.fixed,
-        // override via theme or inline:
-        backgroundColor: const Color(0xFF2C3E50),
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white70,
         onTap: (i) {
           // intercept Performance tap when not logged in
           if (i == 2 && !auth.isLoggedIn) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Please log in!')),
-            );
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(texts.pleaseLogIn)));
             setState(() => _selectedIndex = 0);
           } else {
             setState(() => _selectedIndex = i);
           }
         },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.fitness_center), label: 'Workouts'),
-          BottomNavigationBarItem(icon: Icon(Icons.flag), label: 'Performance'),
-          BottomNavigationBarItem(icon: Icon(Icons.info), label: 'About'),
+        items: [
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.home),
+            label: texts.homeNav,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.fitness_center),
+            label: texts.workoutNav,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.flag),
+            label: texts.performanceNav,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.info),
+            label: texts.aboutNav,
+          ),
         ],
       ),
     );
