@@ -51,8 +51,8 @@ class NLAppTexts implements AppTexts {
   @override String get updateFailed      => 'Bijwerken mislukt';
 
   // about
-  @override String get aboutTitle       => 'Over SummaMove';
-  @override String get appName          => 'SummaMove';
+  @override String get aboutTitle       => 'Over Summa Move';
+  @override String get appName          => 'Summa Move';
   @override String get versionLabel     => 'Versie';
   @override String get version          => '1.0.0+1';
   @override String get sectionInleiding => 'Inleiding';

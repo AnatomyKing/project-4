@@ -1,4 +1,5 @@
-// ignore_for_file: prefer_final_locals
+// lib/pages/performance_page.dart
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -39,12 +40,20 @@ class _PerformancePageState extends State<PerformancePage> {
         headers: {'Authorization': 'Bearer $token'},
       );
 
-      final oefList = (jsonDecode(oefResp.body) as List).map((e) => Oefening.fromJson(e)).toList();
-      final prestList = (jsonDecode(prestResp.body) as List).map((e) => Prestatie.fromJson(e)).toList();
+      final oefList = (jsonDecode(oefResp.body) as List)
+          .map((e) => Oefening.fromJson(e))
+          .toList();
+      final prestList = (jsonDecode(prestResp.body) as List)
+          .map((e) => Prestatie.fromJson(e))
+          .toList();
 
       setState(() {
-        _map..clear()..addEntries(oefList.map((o) => MapEntry(o.id, o)));
-        _all..clear()..addAll(prestList);
+        _map
+          ..clear()
+          ..addEntries(oefList.map((o) => MapEntry(o.id, o)));
+        _all
+          ..clear()
+          ..addAll(prestList);
         _filtered = List.from(_all);
         _loading = false;
       });
@@ -55,21 +64,32 @@ class _PerformancePageState extends State<PerformancePage> {
 
   void _onSearchChanged(String term) {
     term = term.toLowerCase();
-    final matches = _all.where((p) => (_map[p.oefeningId]?.naam.toLowerCase() ?? '').contains(term)).toList();
-    final rest    = _all.where((p) => !(_map[p.oefeningId]?.naam.toLowerCase() ?? '').contains(term)).toList()
-      ..sort((a, b) => _map[a.oefeningId]!.naam.compareTo(_map[b.oefeningId]!.naam));
-    matches.sort((a, b) => _map[a.oefeningId]!.naam.compareTo(_map[b.oefeningId]!.naam));
+    final matches = _all
+        .where((p) =>
+        (_map[p.oefeningId]?.naam.toLowerCase() ?? '').contains(term))
+        .toList();
+    final rest = _all
+        .where((p) =>
+    !(_map[p.oefeningId]?.naam.toLowerCase() ?? '').contains(term))
+        .toList()
+      ..sort((a, b) =>
+          _map[a.oefeningId]!.naam.compareTo(_map[b.oefeningId]!.naam));
+    matches.sort((a, b) =>
+        _map[a.oefeningId]!.naam.compareTo(_map[b.oefeningId]!.naam));
     setState(() => _filtered = [...matches, ...rest]);
   }
 
   @override
   Widget build(BuildContext context) {
-    final lang  = context.watch<LanguageProvider>();
+    final auth = context.watch<AuthProvider>();
+    final lang = context.watch<LanguageProvider>();
     final texts = lang.texts;
-    final auth  = context.watch<AuthProvider>();
+    final title = auth.isLoggedIn
+        ? "${auth.name}'s ${texts.performanceNav}"
+        : texts.performanceNav;
 
     return Scaffold(
-      appBar: CustomAppBar(title: '${auth.name}'),
+      appBar: CustomAppBar(title: title),
       floatingActionButton: RawMaterialButton(
         onPressed: () {}, // add-dialog later
         fillColor: const Color(0xFF42877E),
@@ -82,75 +102,97 @@ class _PerformancePageState extends State<PerformancePage> {
       body: SafeArea(
         child: _loading
             ? const Center(child: CircularProgressIndicator())
-            : Column(children: [
-          SearchHeader(
-            hintText: texts.searchPerformancesHint,
-            titleText: '',
-            subtitleText: texts.perfFilterSubtitle,
-            onChanged: _onSearchChanged,
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _filtered.length,
-              itemBuilder: (_, i) {
-                final p   = _filtered[i];
-                final oef = _map[p.oefeningId]!;
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Row(children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('${oef.naam} — ${p.aantal} ${texts.repsSuffix}',
-                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                              const SizedBox(height: 4),
-                              Text('${p.datum} ${p.starttijd}–${p.eindtijd}',
-                                  style: const TextStyle(color: Colors.grey)),
-                            ],
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.settings),
-                          color: const Color(0xFF42877E),
-                          onPressed: () async {
-                            final updated = await Navigator.push<bool>(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    PerformanceDetailPage(prestatie: p, oefening: oef),
-                              ),
-                            );
-                            if (updated == true) _loadData();
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          color: const Color(0xFF42877E),
-                          onPressed: () async {
-                            final ok = await PrestatieService.deletePrestatie(
-                              token: auth.token!,
-                              prestatieId: p.id,
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(ok ? texts.updateSuccess : texts.updateFailed)),
-                            );
-                            if (ok) _loadData();
-                          },
-                        ),
-                      ]),
-                    ),
-                  ),
-                );
-              },
+            : Column(
+          children: [
+            SearchHeader(
+              hintText: texts.searchPerformancesHint,
+              titleText: '',
+              subtitleText: texts.perfFilterSubtitle,
+              onChanged: _onSearchChanged,
             ),
-          ),
-        ]),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _filtered.length,
+                itemBuilder: (_, i) {
+                  final p = _filtered[i];
+                  final oef = _map[p.oefeningId]!;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 8),
+                    child: Card(
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${oef.naam} — ${p.aantal} ${texts.repsSuffix}',
+                                    style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${p.datum} ${p.starttijd}–${p.eindtijd}',
+                                    style: const TextStyle(
+                                        color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.settings),
+                              color: const Color(0xFF42877E),
+                              onPressed: () async {
+                                final updated =
+                                await Navigator.push<bool>(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        PerformanceDetailPage(
+                                            prestatie: p, oefening: oef),
+                                  ),
+                                );
+                                if (updated == true) _loadData();
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              color: const Color(0xFF42877E),
+                              onPressed: () async {
+                                final ok =
+                                await PrestatieService.deletePrestatie(
+                                  token: auth.token!,
+                                  prestatieId: p.id,
+                                );
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(
+                                  SnackBar(
+                                    content: Text(ok
+                                        ? texts.updateSuccess
+                                        : texts.updateFailed),
+                                  ),
+                                );
+                                if (ok) _loadData();
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -51,8 +51,8 @@ class GBAppTexts implements AppTexts {
   @override String get updateFailed      => 'Update failed';
 
   // about
-  @override String get aboutTitle       => 'About SummaMove';
-  @override String get appName          => 'SummaMove';
+  @override String get aboutTitle       => 'About Summa Move';
+  @override String get appName          => 'Summa Move';
   @override String get versionLabel     => 'Version';
   @override String get version          => '1.0.0+1';
   @override String get sectionInleiding => 'Introduction';

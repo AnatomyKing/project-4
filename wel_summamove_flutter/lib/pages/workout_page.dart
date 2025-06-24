@@ -1,4 +1,5 @@
-// ignore_for_file: prefer_final_locals
+// lib/pages/workout_page.dart
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -30,8 +31,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
 
   Future<void> _loadOefeningen() async {
     try {
-      final resp =
-      await http.get(Uri.parse('http://10.0.2.2:8000/api/oefeningen'));
+      final resp = await http.get(Uri.parse('http://10.0.2.2:8000/api/oefeningen'));
       if (resp.statusCode == 200) {
         final data = jsonDecode(resp.body) as List;
         final list = data.map((e) => Oefening.fromJson(e)).toList();
@@ -50,10 +50,8 @@ class _WorkoutPageState extends State<WorkoutPage> {
 
   void _onSearchChanged(String term) {
     term = term.toLowerCase();
-    final matches =
-    _all.where((o) => o.naam.toLowerCase().contains(term)).toList();
-    final rest =
-    _all.where((o) => !o.naam.toLowerCase().contains(term)).toList();
+    final matches = _all.where((o) => o.naam.toLowerCase().contains(term)).toList();
+    final rest = _all.where((o) => !o.naam.toLowerCase().contains(term)).toList();
     matches.sort((a, b) => a.naam.compareTo(b.naam));
     rest.sort((a, b) => a.naam.compareTo(b.naam));
     setState(() => _filtered = [...matches, ...rest]);
@@ -64,7 +62,9 @@ class _WorkoutPageState extends State<WorkoutPage> {
     final auth = context.watch<AuthProvider>();
     final lang = context.watch<LanguageProvider>();
     final texts = lang.texts;
-    final title = auth.isLoggedIn ? "${auth.name}'s Workouts" : texts.workoutNav;
+    final title = auth.isLoggedIn
+        ? "${auth.name}'s ${texts.workoutNav}"
+        : texts.workoutNav;
 
     return Scaffold(
       appBar: CustomAppBar(title: title),
@@ -105,8 +105,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                     ),
                   );
 
-                  final desc =
-                  oef.description(isEnglish: lang.isEnglish);
+                  final desc = oef.description(isEnglish: lang.isEnglish);
 
                   return Padding(
                     padding: const EdgeInsets.symmetric(
