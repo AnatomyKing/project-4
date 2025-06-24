@@ -1,93 +1,116 @@
-import 'package:flutter/material.dart';
+// lib/pages/workout_page.dart
+
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import '../models/oefening.dart';
 import '../providers/auth_provider.dart';
+import '../widgets/custom_app_bar.dart';
+import '../widgets/search_header.dart';
 import 'exercise_detail_page.dart';
 
 class WorkoutPage extends StatefulWidget {
-  const WorkoutPage({super.key});
+  const WorkoutPage({Key? key}) : super(key: key);
+
   @override
   State<WorkoutPage> createState() => _WorkoutPageState();
 }
 
 class _WorkoutPageState extends State<WorkoutPage> {
-  late Future<List<Oefening>> _futureOefeningen;
+  List<Oefening> _all = [];
+  List<Oefening> _filtered = [];
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
-    _futureOefeningen = fetchOefeningen();
+    _loadOefeningen();
   }
 
-  Future<List<Oefening>> fetchOefeningen() async {
-    final resp = await http.get(Uri.parse('http://10.0.2.2:8000/api/oefeningen'));
-    if (resp.statusCode == 200) {
-      final data = jsonDecode(resp.body) as List;
-      return data.map((e) => Oefening.fromJson(e)).toList();
+  Future<void> _loadOefeningen() async {
+    try {
+      final resp = await http.get(Uri.parse('http://10.0.2.2:8000/api/oefeningen'));
+      if (resp.statusCode == 200) {
+        final data = jsonDecode(resp.body) as List;
+        final list = data.map((e) => Oefening.fromJson(e)).toList();
+        setState(() {
+          _all = list;
+          _filtered = list;
+          _loading = false;
+        });
+      } else {
+        throw Exception('Failed to load oefeningen');
+      }
+    } catch (_) {
+      setState(() => _loading = false);
     }
-    throw Exception('Failed to load oefeningen');
+  }
+
+  void _onSearchChanged(String term) {
+    term = term.toLowerCase();
+    final matches = _all.where((o) => o.naam.toLowerCase().contains(term)).toList();
+    final rest = _all.where((o) => !o.naam.toLowerCase().contains(term)).toList();
+    matches.sort((a, b) => a.naam.compareTo(b.naam));
+    rest.sort((a, b) => a.naam.compareTo(b.naam));
+    setState(() => _filtered = [...matches, ...rest]);
   }
 
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final title = auth.isLoggedIn ? "${auth.name}'s Workouts" : 'Workouts';
 
-    return SafeArea(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // If logged in, show indicator + logout
-          if (auth.isLoggedIn)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Logged in as ${auth.email}', style: const TextStyle(fontWeight: FontWeight.w600)),
-                  TextButton(
-                    onPressed: () => auth.logout(),
-                    child: const Text('Logout'),
-                  ),
-                ],
-              ),
+    return Scaffold(
+      appBar: CustomAppBar(title: title),
+      body: SafeArea(
+        child: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SearchHeader(
+              hintText: 'Search workouts',
+              titleText: 'Any time, anywhere upper body',
+              subtitleText: 'Arms, shoulders, chest & back—no equipment needed.',
+              onChanged: _onSearchChanged,
             ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _filtered.length,
+                itemBuilder: (_, i) {
+                  final oef = _filtered[i];
+                  final thumb = oef.afbeeldingUrl.isNotEmpty
+                      ? ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      oef.afbeeldingUrl,
+                      width: 120,
+                      height: 90,
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                      : CircleAvatar(
+                    radius: 45,
+                    backgroundColor: Colors.blueGrey,
+                    child: Text(
+                      oef.naam[0],
+                      style: const TextStyle(fontSize: 32, color: Colors.white),
+                    ),
+                  );
 
-          const Padding(
-            padding: EdgeInsets.all(16),
-            child: Text('Workouts', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
-          ),
-
-          // ... (search & subtitle as before) ...
-
-          Expanded(
-            child: FutureBuilder<List<Oefening>>(
-              future: _futureOefeningen,
-              builder: (ctx, snap) {
-                if (snap.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snap.hasError) {
-                  return Center(child: Text('Error: ${snap.error}'));
-                }
-                final oefeningen = snap.data!;
-                return ListView.builder(
-                  itemCount: oefeningen.length,
-                  itemBuilder: (_, i) {
-                    final oef = oefeningen[i];
-                    Widget thumb = oef.afbeeldingUrl.isNotEmpty
-                        ? ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(oef.afbeeldingUrl, width: 120, height: 90, fit: BoxFit.cover),
-                    )
-                        : CircleAvatar(
-                      radius: 45,
-                      backgroundColor: Colors.blueGrey,
-                      child: Text(oef.naam[0], style: const TextStyle(fontSize: 32, color: Colors.white)),
-                    );
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ExerciseDetailPage(oefening: oef),
+                          ),
+                        );
+                      },
                       child: Card(
                         elevation: 2,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -101,32 +124,34 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(oef.naam, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                    Text(
+                                      oef.naam,
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                     const SizedBox(height: 4),
-                                    Text(oef.beschrijvingNl, style: const TextStyle(color: Colors.grey)),
+                                    Text(
+                                      oef.beschrijvingNl,
+                                      style: const TextStyle(color: Colors.grey, fontSize: 14),
+                                    ),
                                   ],
                                 ),
                               ),
-                              IconButton(
-                                icon: const Icon(Icons.play_circle_fill, size: 32, color: Colors.blue),
-                                onPressed: auth.isLoggedIn
-                                    ? () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => ExerciseDetailPage(oefening: oef)),
-                                )
-                                    : null,
-                              ),
+                              // purely decorative play icon
+                              const Icon(Icons.play_circle_fill, size: 32, color: Color(0xFF42877E)),
                             ],
                           ),
                         ),
                       ),
-                    );
-                  },
-                );
-              },
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

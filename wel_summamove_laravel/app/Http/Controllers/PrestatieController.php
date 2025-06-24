@@ -13,7 +13,8 @@ class PrestatieController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $prestaties = Prestatie::where('user_id', $user->id)->get();
+        // ← use 'gebruiker_id' here
+        $prestaties = Prestatie::where('gebruiker_id', $user->id)->get();
 
         return response()->json($prestaties);
     }
@@ -27,20 +28,19 @@ class PrestatieController extends Controller
 
         $validated = $request->validate([
             'oefening_id' => 'required|exists:oefeningen,id',
-            'datum' => 'required|date',
-            'starttijd' => 'nullable|date_format:H:i:s',
-            'eindtijd' => 'nullable|date_format:H:i:s',
-            'aantal' => 'required|integer|min:1',
+            'datum'       => 'required|date',
+            'starttijd'   => 'nullable|date_format:H:i:s',
+            'eindtijd'    => 'nullable|date_format:H:i:s',
+            'aantal'      => 'required|integer|min:1',
         ]);
 
+        // ← correctly name the FK
         $validated['gebruiker_id'] = $user->id;
 
         $prestatie = Prestatie::create($validated);
 
         return response()->json($prestatie, 201);
     }
-
-
 
     /**
      * Toon een specifieke prestatie (alleen van ingelogde gebruiker).
@@ -49,7 +49,8 @@ class PrestatieController extends Controller
     {
         $user = $request->user();
 
-        if ($prestatie->user_id !== $user->id) {
+        // ← check 'gebruiker_id'
+        if ($prestatie->gebruiker_id !== $user->id) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -63,13 +64,13 @@ class PrestatieController extends Controller
     {
         $user = $request->user();
 
-        if ($prestatie->user_id !== $user->id) {
+        if ($prestatie->gebruiker_id !== $user->id) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
         $validated = $request->validate([
-            'resultaat' => 'sometimes|required|string',
-            // andere velden die geüpdatet kunnen worden
+            'aantal' => 'sometimes|required|integer|min:1',
+            // of andere velden die je wilt toestaan
         ]);
 
         $prestatie->update($validated);
@@ -84,7 +85,7 @@ class PrestatieController extends Controller
     {
         $user = $request->user();
 
-        if ($prestatie->user_id !== $user->id) {
+        if ($prestatie->gebruiker_id !== $user->id) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 

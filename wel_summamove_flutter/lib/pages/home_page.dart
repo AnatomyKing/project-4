@@ -1,3 +1,5 @@
+// lib/pages/home_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
@@ -19,18 +21,20 @@ class _HomePageState extends State<HomePage> {
 
     return Stack(
       children: [
+        // Background image
         Positioned.fill(
           child: Image.asset('assets/images/background.png', fit: BoxFit.cover),
         ),
+        // Dark overlay
         Positioned.fill(
           child: Container(color: Colors.black.withOpacity(0.3)),
         ),
 
-        // Top bar
+        // Top bar with updated hex color
         Positioned(
           top: 0, left: 0, right: 0, height: 140,
           child: Container(
-            color: Colors.grey[800],
+            color: const Color(0xFF707070),  // ← hex #707070
             child: SafeArea(
               bottom: false,
               child: const Center(
@@ -117,8 +121,13 @@ class _HomePageState extends State<HomePage> {
                     TextField(
                       controller: _emailCtl,
                       decoration: const InputDecoration(
-                        hintText: 'E-mail', filled: true, fillColor: Colors.white,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide.none),
+                        hintText: 'E-mail',
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -126,8 +135,13 @@ class _HomePageState extends State<HomePage> {
                       controller: _pwCtl,
                       obscureText: true,
                       decoration: const InputDecoration(
-                        hintText: 'Wachtwoord', filled: true, fillColor: Colors.white,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide.none),
+                        hintText: 'Wachtwoord',
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
                     ),
                   ],
