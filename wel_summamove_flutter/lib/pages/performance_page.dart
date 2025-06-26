@@ -1,9 +1,7 @@
-// lib/pages/performance_page.dart
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import '../models/oefening.dart';
 import '../models/prestatie.dart';
 import '../providers/auth_provider.dart';
@@ -79,6 +77,132 @@ class _PerformancePageState extends State<PerformancePage> {
     setState(() => _filtered = [...matches, ...rest]);
   }
 
+  Future<void> _showAddDialog() async {
+    final auth = context.read<AuthProvider>();
+    final lang = context.read<LanguageProvider>();
+    final texts = lang.texts;
+
+    if (_map.isEmpty) return;
+
+    Oefening selectedOef = _map.values.first;
+    DateTime selectedDate = DateTime.now();
+    TimeOfDay startTime = TimeOfDay.now();
+    TimeOfDay endTime = TimeOfDay.now();
+    final repsCtl = TextEditingController();
+
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          title: Text(texts.save), // of voeg texts.addPerformanceTitle toe
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownButton<Oefening>(
+                  isExpanded: true,
+                  value: selectedOef,
+                  onChanged: (o) => setState(() => selectedOef = o!),
+                  items: _map.values
+                      .map((o) => DropdownMenuItem(
+                    value: o,
+                    child: Text(o.naam),
+                  ))
+                      .toList(),
+                ),
+                const SizedBox(height: 8),
+                TextButton.icon(
+                  icon: const Icon(Icons.calendar_today),
+                  label: Text(
+                      '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}'),
+                  onPressed: () async {
+                    final d = await showDatePicker(
+                      context: ctx,
+                      initialDate: selectedDate,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime.now(),
+                    );
+                    if (d != null) setState(() => selectedDate = d);
+                  },
+                ),
+                const SizedBox(height: 8),
+                TextButton.icon(
+                  icon: const Icon(Icons.play_arrow),
+                  label: Text(startTime.format(context)),
+                  onPressed: () async {
+                    final t = await showTimePicker(
+                      context: ctx,
+                      initialTime: startTime,
+                    );
+                    if (t != null) setState(() => startTime = t);
+                  },
+                ),
+                const SizedBox(height: 8),
+                TextButton.icon(
+                  icon: const Icon(Icons.stop),
+                  label: Text(endTime.format(context)),
+                  onPressed: () async {
+                    final t = await showTimePicker(
+                      context: ctx,
+                      initialTime: endTime,
+                    );
+                    if (t != null) setState(() => endTime = t);
+                  },
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: repsCtl,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(hintText: texts.repsHint),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(texts.cancel),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(texts.save),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (ok == true) {
+      final startDt = DateTime(
+        selectedDate.year,
+        selectedDate.month,
+        selectedDate.day,
+        startTime.hour,
+        startTime.minute,
+      );
+      final endDt = DateTime(
+        selectedDate.year,
+        selectedDate.month,
+        selectedDate.day,
+        endTime.hour,
+        endTime.minute,
+      );
+
+      final success = await PrestatieService.savePrestatie(
+        token: auth.token!,
+        oefeningId: selectedOef.id,
+        start: startDt,
+        end: endDt,
+        aantal: int.tryParse(repsCtl.text) ?? 0,
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(success ? texts.saved : texts.saveFailed)),
+      );
+      if (success) _loadData();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
@@ -91,7 +215,7 @@ class _PerformancePageState extends State<PerformancePage> {
     return Scaffold(
       appBar: CustomAppBar(title: title),
       floatingActionButton: RawMaterialButton(
-        onPressed: () {}, // add-dialog later
+        onPressed: _showAddDialog,
         fillColor: const Color(0xFF42877E),
         shape: const CircleBorder(),
         constraints: const BoxConstraints.tightFor(width: 56, height: 56),
@@ -151,13 +275,13 @@ class _PerformancePageState extends State<PerformancePage> {
                               icon: const Icon(Icons.settings),
                               color: const Color(0xFF42877E),
                               onPressed: () async {
-                                final updated =
-                                await Navigator.push<bool>(
+                                final updated = await Navigator.push<bool>(
                                   context,
                                   MaterialPageRoute(
                                     builder: (_) =>
                                         PerformanceDetailPage(
-                                            prestatie: p, oefening: oef),
+                                            prestatie: p,
+                                            oefening: oef),
                                   ),
                                 );
                                 if (updated == true) _loadData();

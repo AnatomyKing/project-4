@@ -1,4 +1,3 @@
-// ignore_for_file: prefer_final_locals
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

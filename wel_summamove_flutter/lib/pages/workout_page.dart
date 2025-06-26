@@ -1,5 +1,3 @@
-// lib/pages/workout_page.dart
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -9,7 +7,7 @@ import '../providers/auth_provider.dart';
 import '../providers/language_provider.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/search_header.dart';
-import 'exercise_detail_page.dart';
+import 'workout_detail_page.dart';
 
 class WorkoutPage extends StatefulWidget {
   const WorkoutPage({Key? key}) : super(key: key);

@@ -1,5 +1,3 @@
-// lib/pages/performance_detail_page.dart
-// ignore_for_file: prefer_final_locals
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
